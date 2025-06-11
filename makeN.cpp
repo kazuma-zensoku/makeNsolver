@@ -92,15 +92,15 @@ ll dfs(vl & idx, ll depth, ll op_sum){
 }
 
 int main() {
-	cin.tie(nullptr);
-	ios_base::sync_with_stdio(false);
-	cin >> N >> K;
-	a.resize(K);
+    cin.tie(nullptr);
+    ios_base::sync_with_stdio(false);
+    cin >> N >> K;
+    a.resize(K);
     ops.resize(4);
     ops = {"+", "-", "*", "/"};
-	nrep(i, K){
-		cin >> a[i];
-	}
+    nrep(i, K){
+        cin >> a[i];
+    }
     vl idx(K, 0);
     nrep(i, K){
         idx[i] = i;
