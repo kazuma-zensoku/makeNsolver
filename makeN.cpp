@@ -1,123 +1,96 @@
-#include <bits/stdc++.h>
-#include <atcoder/all>
-using namespace atcoder;
-using namespace std;
-using ll = long long; using mint=modint998244353;
-const int inf = INT_MAX / 2; const ll infl = 1LL << 60;
-template<class T> inline bool chmax(T& a, T b) { if (a < b) { a = b; return 1; } return 0; }
-template<class T> inline bool chmin(T& a, T b) { if (a > b) { a = b; return 1; } return 0; }
-const vector<int> dx = {1, 0, -1, 0}; const vector<int> dy = {0, 1, 0, -1};
-template<typename T> using vc = vector<T>; template<typename T> using vv = vc<vc<T>>;
-using vi = vc<int>;  using vvi = vv<int>; using vl = vc<ll>; using vvl = vv<ll>; using vvvl = vv<vl>; using vvvvl = vv<vvl>;
-using vs = vc<string>; using vvs = vv<string>; using P = pair<ll, ll>;
-#define nrep(i,n) for (int i = 0; i < (n); ++i)
-#define nfor(i,s,n) for(ll i=s;i<n;i++)//i=s,s+1...n-1 ノーマルfor
-#define vc_cout(v){ll n = v.size();nrep(i,n)cout<<v[i]<<" \n"[i+1==n];}//一次元配列を出力する
-#define vv_cout(v){ll n = v.size();nrep(i,n){nrep(j,v[i].size()){cout<<v[i][j]<<' ';}cout<<endl;}}//二次元配列を出力する
-template<class T> using pq = priority_queue<T, vc<T>>;//★大きい順に取り出す コスト,頂点 bfs系で使う　小さい順じゃないですABC305E
-template<class T> using pq_g = priority_queue<T, vc<T>, greater<T>>;//小さい順に取り出す　ダイクストラ法で使う
-#define cout(n) cout<<n<<endl;
-using ld = long double;
-ll N, K;
-ll ans;
-vc<string> a;
-vc<string> ops;
-vc<string> st; 
-set<string> formula;
-ll generated_nodes = 0;
-//　計算量はO(n! 4^n 2nCn-1)?
-int evalRPN(vector<string>& tokens) {
-    // int size = tokens.size();
-    vector<int> st;
-    for(string s : tokens){
-        if(s=="+"){
-            int a = st.back(); st.pop_back();
-            int b = st.back(); st.pop_back();
-            st.push_back(a+b);
-        }
-        else if(s=="-"){
-            int a = st.back(); st.pop_back();
-            int b = st.back(); st.pop_back();
-            st.push_back(b-a);
-        }
-        else if(s=="*"){
-            int a = st.back(); st.pop_back();
-            int b = st.back(); st.pop_back();
-            st.push_back(a*b);
-        }
-        else if(s=="/"){
-            int a = st.back(); st.pop_back();
-            int b = st.back(); st.pop_back();
-            if(a==0) return -inf;
-            st.push_back(b/a);
-        }
-        else{
-            int x = stoi(s);
-            st.push_back(x);
+#include <iostream>
+#include <vector>
+#include <string>
+#include <set>
+#include <algorithm>
+#include <climits>
+
+int evalRPN(const std::vector<std::string>& tokens) {
+    std::vector<int> stack;
+    for (const std::string& s : tokens) {
+        if (s == "+") {
+            int a = stack.back(); stack.pop_back();
+            int b = stack.back(); stack.pop_back();
+            stack.push_back(a + b);
+        } else if (s == "-") {
+            int a = stack.back(); stack.pop_back();
+            int b = stack.back(); stack.pop_back();
+            stack.push_back(b - a);
+        } else if (s == "*") {
+            int a = stack.back(); stack.pop_back();
+            int b = stack.back(); stack.pop_back();
+            stack.push_back(a * b);
+        } else if (s == "/") {
+            int a = stack.back(); stack.pop_back();
+            int b = stack.back(); stack.pop_back();
+            if (a == 0) return INT_MIN;
+            stack.push_back(b / a);
+        } else {
+            int x = std::stoi(s);
+            stack.push_back(x);
         }
     }
-    return st.front();
+    return stack.front();
 }
 
-ll dfs(vl & idx, ll depth, ll op_sum){
-    generated_nodes++;
-    if(depth == K && op_sum == K-1){
-        ans++;
-        string tmp;
-        nrep(i, st.size()){
-            tmp += st[i] + " "[i+1==st.size()];
+void dfs(
+    const std::vector<std::string>& a,
+    const std::vector<std::string>& ops,
+    std::vector<std::string>& st,
+    std::set<std::string>& formula,
+    const std::vector<int>& idx,
+    int N, int K, int depth, int op_sum
+) {
+    if (depth == K && op_sum == K - 1) {
+        std::string tmp;
+        for (size_t i = 0; i < st.size(); ++i) {
+            tmp += st[i];
+            if (i + 1 != st.size()) tmp += " ";
         }
-        if(evalRPN(st) == N){
+        if (evalRPN(st) == N) {
             formula.insert(tmp);
         }
-        return 0;
+        return;
     }
-    if(depth < K) {
+    if (depth < K) {
         st.push_back(a[idx[depth]]);
     }
-    
-    if(op_sum < K && depth > 0){
-        nrep(i, 4){
+    if (op_sum < K && depth > 0) {
+        for (int i = 0; i < 4; ++i) {
             st.push_back(ops[i]);
-            dfs(idx, depth+(depth<K), op_sum+1);
+            dfs(a, ops, st, formula, idx, N, K, depth + (depth < K), op_sum + 1);
             st.pop_back();
         }
     }
-    
-    if(depth < K) {
-        dfs(idx, depth+1, op_sum);
+    if (depth < K) {
+        dfs(a, ops, st, formula, idx, N, K, depth + 1, op_sum);
         st.pop_back();
     }
-    return 0;
 }
 
 int main() {
-    cin.tie(nullptr);
-    ios_base::sync_with_stdio(false);
-    cin >> N >> K;
-    a.resize(K);
-    ops.resize(4);
-    ops = {"+", "-", "*", "/"};
-    nrep(i, K){
-        cin >> a[i];
+    int N, K;
+    std::cin >> N >> K;
+    std::vector<std::string> a(K);
+    for (int i = 0; i < K; ++i) {
+        std::cin >> a[i];
     }
-    vl idx(K, 0);
-    nrep(i, K){
-        idx[i] = i;
-    }
-    do{
-        dfs(idx, 0, 0);
-    }while(next_permutation(idx.begin(), idx.end()));
-    // cout << ans << endl;
-    if(formula.size() == 0){
-        cout << "No" << endl;
+    std::vector<std::string> ops = {"+", "-", "*", "/"};
+    std::vector<int> idx(K);
+    for (int i = 0; i < K; ++i) idx[i] = i;
+    std::set<std::string> formula;
+    std::vector<std::string> st;
+    do {
+        dfs(a, ops, st, formula, idx, N, K, 0, 0);
+    } while (std::next_permutation(idx.begin(), idx.end()));
+    if (formula.empty()) {
+        std::cout << "No" << std::endl;
         return 0;
     }
-    cout << "Yes" << endl;
-    cout << formula.size() << endl;
-    for(string s : formula){
-        cout << s << endl;
-    }    
-    // cout << generated_nodes << endl;    
-    // cout << "No" << endl;
+    std::cout << "Yes" << std::endl;
+    std::cout << formula.size() << std::endl;
+    for (const std::string& s : formula) {
+        std::cout << s << std::endl;
+    }
+    return 0;
 }
