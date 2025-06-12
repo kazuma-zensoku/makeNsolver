@@ -62,7 +62,7 @@ ll dfs(vl & idx, ll depth, ll op_sum){
     generated_nodes++;
     if(depth == K && op_sum == K-1){
         ans++;
-        if(abs(evalRPN(st)-N) < 1e18){
+        if(abs(evalRPN(st)-N) < 1e-9){
             string tmp;
             nrep(i, st.size()){
                 tmp += st[i] + " ";
@@ -113,9 +113,7 @@ int main() {
     cout << "Yes" << endl;
 
     cout << formulas.size() << endl;
-    // 解の個数だけ知りたいときはここをコメントアウト
-    cout << formulas[0] << endl;
-    // for(string s : formulas){
-    //     cout << s << endl;
-    // }     
+    for(string s : formulas){
+        cout << s << endl;
+    }     
 } 
